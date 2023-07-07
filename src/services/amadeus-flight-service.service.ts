@@ -27,5 +27,20 @@ export class AmadeusFlightServiceProvider  {
 
   }
 
+  async getFlightOffersPricing(flightOfferPricingRequest: any, pricingCountry:string): Promise<AnyObject> {
+    const response = await this.dataSource.execute({
+      authCode: pricingCountry,
+      method: 'POST',
+      url: '/v1/shopping/flight-offers/pricing?forceClass=false',
+      headers: {
+        'accept': 'application/vnd.amadeus+json',
+        'Content-Type': 'application/vnd.amadeus+json',
+      },
+      data: flightOfferPricingRequest,
+    });
+    console.log('Response: ', response);
+    return response;
+  }
+
 
 }
