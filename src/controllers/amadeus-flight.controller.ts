@@ -1,8 +1,10 @@
 import {inject} from '@loopback/core';
-import {FlightOfferRequest} from '../interfaces/amadeus-flight.interface';
 import {param, post, requestBody, Response, RestBindings} from '@loopback/rest';
 import {AmadeusFlightServiceProvider} from '../services';
 import {FlightOfferPricing} from '../interfaces/offer-price.interface';
+import {AirShoppingRQ} from '../models/19.2/AirShoppingRQ.interface';
+import {convertFlightOfferResponseToAirShoppingRS, convertToFlightOfferRequest} from '../Utils/BoilerPlate';
+import {AirShoppingRS} from '../models/19.2/AirShoppingRS.interface';
 
 export class AmadeusFlightController {
   constructor(
@@ -20,12 +22,11 @@ export class AmadeusFlightController {
     },
   })
   async getFlightOffers(
-    @requestBody() flightOfferRequest: FlightOfferRequest,
+    @requestBody() flightOfferRequest: AirShoppingRQ,
     @param.path.string('priceIngCountry') priceIngCountry: string,
-  ): Promise<any> {
-    const response = await this.flightServiceProvider.getFlightOffers(flightOfferRequest, priceIngCountry);
-    console.log('Response: ', response);
-    return response;
+  ): Promise<AirShoppingRS> {
+    const response : any = await this.flightServiceProvider.getFlightOffers(convertToFlightOfferRequest(flightOfferRequest), priceIngCountry);
+    return convertFlightOfferResponseToAirShoppingRS(response)
   }
 
 
@@ -41,8 +42,6 @@ async getFlightOffersPricing(
   @requestBody() flightOfferPricingRequest: FlightOfferPricing,
   @param.path.string('priceIngCountry') priceIngCountry: string, )
   : Promise<any> {
-    const response = await this.flightServiceProvider.getFlightOffersPricing(flightOfferPricingRequest, priceIngCountry);
-    console.log('Response: ', response);
-    return response;
+  return this.flightServiceProvider.getFlightOffersPricing(flightOfferPricingRequest, priceIngCountry);
   }
 }

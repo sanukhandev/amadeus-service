@@ -8,6 +8,24 @@ interface AuthConfig {
     clientSecret: string;
   };
 }
+  interface RequestPayload{
+  method: string;
+  url: string;
+  data?: never;
+  headers?: never;
+  authCode?: string;
+}
+
+
+
+
+const COMMON_HEADERS = {
+  'accept': 'application/vnd.amadeus+json',
+  'Content-Type': 'application/vnd.amadeus+json',
+};
+
+
+
 
 const AuthConfig: AuthConfig = {
   EU: {
@@ -44,19 +62,18 @@ export class AmadeusApiDataSource extends juggler.DataSource
   execute(request: any): Promise<any> {
     if(request.authCode === undefined) return this.sendRequest(request);
     return this.authenticate(request.authCode).then((accessToken: string) => {
+      request.headers = COMMON_HEADERS;
       request.headers.Authorization = `Bearer ${accessToken}`;
       return this.sendRequest(request);
     });
   }
 
   authenticate(authCode: string): Promise<string> {
-    console.log('Authenticating...');
     if (!AuthConfig[authCode]) throw new Error('Invalid Country Code');
     const data = new URLSearchParams();
     data.append('grant_type', 'client_credentials');
     data.append('client_id', AuthConfig[authCode].clientId);
     data.append('client_secret', AuthConfig[authCode].clientSecret);
-
     return axios
       .post(config.baseURL+'/v1/security/oauth2/token', data, {
         headers: {
@@ -65,12 +82,11 @@ export class AmadeusApiDataSource extends juggler.DataSource
       })
       .then((response: any) => {
         console.log('Authenticated!');
-        console.log('Response: ', response.data);
         return response.data.access_token;
       });
   }
 
-  sendRequest({method, url, headers, data}: any): Promise<any> {
+  sendRequest({method, url, headers, data}:RequestPayload ): Promise<any> {
     url = config.baseURL + url;
     return axios({
       method,

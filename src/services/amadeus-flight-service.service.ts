@@ -1,8 +1,8 @@
 import {inject} from '@loopback/core';
 import {AmadeusApiDataSource} from '../datasources';
-import {FlightOfferRequest} from '../interfaces/amadeus-flight.interface';
+import {FlightOfferRequest} from '../interfaces/flightRequest';
 import {AnyObject} from '@loopback/repository';
-
+import {FlightOfferPricing} from '../interfaces/offer-price.interface';
 
 
 export class AmadeusFlightServiceProvider  {
@@ -12,34 +12,23 @@ export class AmadeusFlightServiceProvider  {
   ) {}
 
   async getFlightOffers(flightOfferRequest: FlightOfferRequest, pricingCountry:string): Promise<AnyObject> {
-    const response = await this.dataSource.execute({
+    console.log('flightOfferRequest', JSON.stringify(flightOfferRequest));
+    return this.dataSource.execute({
       authCode: pricingCountry,
       method: 'POST',
       url: '/v2/shopping/flight-offers',
-      headers: {
-        'accept': 'application/vnd.amadeus+json',
-        'Content-Type': 'application/vnd.amadeus+json',
-      },
       data: flightOfferRequest,
     });
-    console.log('Response: ', response);
-    return response;
 
   }
 
-  async getFlightOffersPricing(flightOfferPricingRequest: any, pricingCountry:string): Promise<AnyObject> {
-    const response = await this.dataSource.execute({
+  async getFlightOffersPricing(flightOfferPricingRequest: FlightOfferPricing, pricingCountry:string): Promise<AnyObject> {
+    return this.dataSource.execute({
       authCode: pricingCountry,
       method: 'POST',
       url: '/v1/shopping/flight-offers/pricing?forceClass=false',
-      headers: {
-        'accept': 'application/vnd.amadeus+json',
-        'Content-Type': 'application/vnd.amadeus+json',
-      },
       data: flightOfferPricingRequest,
     });
-    console.log('Response: ', response);
-    return response;
   }
 
 
