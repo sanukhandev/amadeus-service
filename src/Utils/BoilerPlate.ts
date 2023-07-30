@@ -1,109 +1,146 @@
-import {AirShoppingRQ} from '../models/19.2/AirShoppingRQ.interface';
+import {IATA_AirShoppingRQ} from '../models/19.2/AirShoppingRQ.interface';
 import {FlightOfferRequest} from '../interfaces/flightRequest';
+import {IATA_AirShoppingRS} from '../models/19.2/AirShoppingRS.interface';
 import {FlightOfferResponse} from '../interfaces/FlightOfferResponse';
-import {AirShoppingRS} from '../models/19.2/AirShoppingRS.interface';
 
-export function convertToFlightOfferRequest(airShoppingRQ: AirShoppingRQ): FlightOfferRequest {
-  return {
-    currencyCode: airShoppingRQ.Preference.Currencies.CurrencyCode,
-    originDestinations: airShoppingRQ.CoreQuery.OriginDestinations.map((originDestination) => {
+export function convertToFlightOfferRequest(airShoppingRQ: IATA_AirShoppingRQ): FlightOfferRequest {
+  return <FlightOfferRequest>{
+    currencyCode: 'USD',
+    originDestinations: airShoppingRQ.Message.AirShopping.CoreQuery.OriginDestinations.map((originDestination, index) => {
+      const {OriginDestination} = originDestination;
       return {
-        id: '1',
-        originLocationCode: originDestination.Departure.AirportCode,
-        destinationLocationCode: originDestination.Arrival.AirportCode,
+        id: (index + 1).toString(),
+        originLocationCode: OriginDestination.Departure.AirportCode,
+        destinationLocationCode: OriginDestination.Arrival.AirportCode,
         departureDateTimeRange: {
-          date: originDestination.Departure.Date,
-          time: "10:00:00", // Replace this with the actual time if available in the AirShoppingRQ
+          date: OriginDestination.Departure.Date,
+          time: OriginDestination.Departure.Time,
         },
       };
     }),
-    travelers: airShoppingRQ.CoreQuery.Passengers.map((passenger) => {
+    travelers: airShoppingRQ.Message.AirShopping.CoreQuery.Travelers.map((traveler) => {
+      const {Traveler} = traveler;
       return {
-        id: passenger.id,
-        travelerType: passenger.PTC,
+        id: Traveler.Id,
+        travelerType: Traveler.AnonymousTraveler.Age >= 12 ? "ADULT" : "CHILD",
       };
     }),
-    sources: ["GDS"], // This value is not available in the AirShoppingRQ, assuming it as "GDS"
+    sources: ["GDS"],
     searchCriteria: {
-      maxFlightOffers: 2, // Replace this with the actual maxFlightOffers from AirShoppingRQ
+      maxFlightOffers: airShoppingRQ.Message.AirShopping.ShoppingResponseIDs?.length ?? 2,
       flightFilters: {
-        cabinRestrictions: airShoppingRQ.CoreQuery.CabinPreferences.map((cabinPreference) => {
-          return {
-            cabin: cabinPreference.CabinType,
-            coverage: "MOST_SEGMENTS", // Assuming this value, as it is not available in the AirShoppingRQ
-            originDestinationIds: airShoppingRQ.CoreQuery.OriginDestinations.map((originDestination) => originDestination.id),
-          };
-        }),
+        cabinRestrictions: airShoppingRQ.Message.AirShopping.CoreQuery.Cabin?.Type
+          ? [
+            {
+              cabin: airShoppingRQ.Message.AirShopping.CoreQuery.Cabin.Type,
+              coverage: "MOST_SEGMENTS",
+              originDestinationIds: airShoppingRQ.Message.AirShopping.CoreQuery.OriginDestinations.map((originDestination, index) => (index + 1).toString()),
+            },
+          ]
+          : [],
       },
     },
   };
 }
 
-export function convertFlightOfferResponseToAirShoppingRS(flightOfferResponse: FlightOfferResponse): AirShoppingRS {
+export function convertFlightOfferResponseToAirShoppingRS(flightOfferResponse: FlightOfferResponse): IATA_AirShoppingRS {
   return {
-    FlightOffers: flightOfferResponse.data.map((flightOffer) => {
-      return {
-        OfferID: flightOffer.id,
-        TotalPrice: {
-          Value: parseFloat(flightOffer.price.total),
-          CurrencyCode: flightOffer.price.currency,
+    Message: {
+      Party: {
+        Sender: {
+          TravelAgencySender: {
+            Name: "Travel Globe LLC",
+            IATA_Number: "12345678",
+          },
         },
-        Itineraries: flightOffer.itineraries.map((itinerary) => {
+        Recipient: {
+          AirlineRecipient: {
+            Name: flightOfferResponse.dictionaries.carriers[flightOfferResponse.data[0].validatingAirlineCodes[0]],
+            Code: flightOfferResponse.data[0].validatingAirlineCodes[0],
+          },
+        },
+      },
+      AirShopping: {
+        Travelers: {
+          Traveler: [
+            {
+              AnonymousTraveler: {
+                Age: 30,
+              },
+            },
+          ],
+        },
+        ShoppingResponseIDs: flightOfferResponse.data.map((flightOffer) => {
           return {
-            Segments: itinerary.segments.map((segment) => {
-              return {
-                Departure: {
-                  AirportCode: segment.departure.iataCode,
-                  Date: segment.departure.at.split('T')[0],
-                  Time: segment.departure.at.split('T')[1],
-                },
-                Arrival: {
-                  AirportCode: segment.arrival.iataCode,
-                  Date: segment.arrival.at.split('T')[0],
-                  Time: segment.arrival.at.split('T')[1],
-                },
-                Airline: {
-                  Code: segment.operating.carrierCode,
-                  Name: flightOfferResponse.dictionaries.carriers[segment.operating.carrierCode],
-                },
-                FlightNumber: segment.number,
-                Aircraft: {
-                  Code: segment.aircraft.code,
-                  Name: flightOfferResponse.dictionaries.aircraft[segment.aircraft.code],
-                },
-                Cabin: {
-                  Code: segment.operating.carrierCode, // Not present in the original interfaces
-                  Name: flightOfferResponse.dictionaries.carriers[segment.operating.carrierCode], // Not present in the original interfaces
-                },
-                Duration: segment.duration,
-              };
-            }),
+            ResponseID: flightOffer.id,
           };
         }),
-        FareBreakdown: flightOffer.travelerPricings.map((travelerPricing) => {
+        ResponseTime: new Date().toISOString(), // You can set the actual response time here
+        Offers: flightOfferResponse.data.map((flightOffer) => {
           return {
-            PassengerType: travelerPricing.travelerType,
-            TotalFare: {
-              Value: parseFloat(travelerPricing.price.total),
-              CurrencyCode: travelerPricing.price.currency,
+            OfferID: flightOffer.id,
+            TotalPrice: {
+              Value: parseFloat(flightOffer.price.total),
+              CurrencyCode: flightOffer.price.currency,
             },
-            Taxes: flightOffer.price.fees.map((fee) => {
+            Itineraries: [
+              {
+                Segments: flightOffer.itineraries[0].segments.map((segment) => {
+                  return {
+                    Departure: {
+                      AirportCode: segment.departure.iataCode,
+                      Date: segment.departure.at.split("T")[0],
+                      Time: segment.departure.at.split("T")[1],
+                    },
+                    Arrival: {
+                      AirportCode: segment.arrival.iataCode,
+                      Date: segment.arrival.at.split("T")[0],
+                      Time: segment.arrival.at.split("T")[1],
+                    },
+                    Airline: {
+                      Code: segment.operating.carrierCode,
+                      Name: flightOfferResponse.dictionaries.carriers[segment.operating.carrierCode],
+                    },
+                    FlightNumber: segment.number,
+                    Aircraft: {
+                      Code: segment.aircraft.code,
+                      Name: flightOfferResponse.dictionaries.aircraft[segment.aircraft.code],
+                    },
+                    Cabin: {
+                      Code: "ECONOMY", // Assuming economy class for all offers
+                      Name: "Economy Class", // You can set the actual cabin name here
+                    },
+                    Duration: segment.duration,
+                  };
+                }),
+              },
+            ],
+            FareBreakdown: flightOffer.travelerPricings.map((travelerPricing) => {
               return {
-                Type: fee.type,
-                Amount: {
-                  Value: parseFloat(fee.amount),
+                PassengerType: travelerPricing.travelerType,
+                TotalFare: {
+                  Value: parseFloat(travelerPricing.price.total),
                   CurrencyCode: travelerPricing.price.currency,
                 },
+                Taxes: flightOffer.price.fees.map((fee) => {
+                  return {
+                    Type: fee.type,
+                    Amount: {
+                      Value: parseFloat(fee.amount),
+                      CurrencyCode: travelerPricing.price.currency,
+                    },
+                  };
+                }),
               };
             }),
+            FareRules: {
+              CurrencyCode: flightOffer.price.currency,
+              FareRuleDetail: "", // Not available in the provided data
+            },
+            AncillaryServices: [], // Not available in the provided data
           };
         }),
-        FareRules: {
-          CurrencyCode: flightOffer.price.currency,
-          FareRuleDetail: '', // Not present in the original interfaces
-        },
-        AncillaryServices: [], // Not present in the original interfaces
-      };
-    }),
+      },
+    },
   };
 }

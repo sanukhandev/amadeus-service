@@ -2,9 +2,9 @@ import {inject} from '@loopback/core';
 import {param, post, requestBody, Response, RestBindings} from '@loopback/rest';
 import {AmadeusFlightServiceProvider} from '../services';
 import {FlightOfferPricing} from '../interfaces/offer-price.interface';
-import {AirShoppingRQ} from '../models/19.2/AirShoppingRQ.interface';
+import { IATA_AirShoppingRQ} from '../models/19.2/AirShoppingRQ.interface';
 import {convertFlightOfferResponseToAirShoppingRS, convertToFlightOfferRequest} from '../Utils/BoilerPlate';
-import {AirShoppingRS} from '../models/19.2/AirShoppingRS.interface';
+import {IATA_AirShoppingRS} from '../models/19.2/AirShoppingRS.interface';
 
 export class AmadeusFlightController {
   constructor(
@@ -22,9 +22,9 @@ export class AmadeusFlightController {
     },
   })
   async getFlightOffers(
-    @requestBody() flightOfferRequest: AirShoppingRQ,
+    @requestBody() flightOfferRequest: IATA_AirShoppingRQ,
     @param.path.string('priceIngCountry') priceIngCountry: string,
-  ): Promise<AirShoppingRS> {
+  ): Promise<IATA_AirShoppingRS> {
     const response : any = await this.flightServiceProvider.getFlightOffers(convertToFlightOfferRequest(flightOfferRequest), priceIngCountry);
     return convertFlightOfferResponseToAirShoppingRS(response)
   }

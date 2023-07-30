@@ -1,77 +1,86 @@
-interface Document {
-  Name: string;
-  ReferenceVersion: string;
-}
-
-interface TravelAgencySender {
-  Name: string;
-  IATA_Number: string;
-}
-
-interface AirlineRecipient {
-  Name: string;
-  Code: string;
-}
-
-interface Party {
-  Sender: {
-    TravelAgencySender: TravelAgencySender;
+export interface IATA_AirShoppingRQ {
+  Message: {
+    Party: {
+      Sender: {
+        TravelAgencySender: {
+          Name: string;
+          IATA_Number: string;
+        };
+      };
+    };
+    AirShopping: {
+      Travelers: {
+        Traveler: {
+          AnonymousTraveler: {
+            Age: number;
+          };
+        }[];
+      };
+      ShoppingResponseIDs?: {
+        ResponseID: string;
+      }[];
+      Metadata?: {
+        Key: string;
+        Value: string;
+      }[];
+      RequestedDate?: {
+        Date: string;
+      };
+      CoreQuery: {
+        OriginDestinations: {
+          OriginDestination: {
+            Departure: {
+              AirportCode: string;
+              Date: string;
+              Time?: string;
+            };
+            Arrival: {
+              AirportCode: string;
+              Date?: string;
+              Time?: string;
+            };
+          };
+        }[];
+        Travelers: {
+          Traveler: {
+            Id: string;
+            AnonymousTraveler: {
+              Age: number;
+            };
+          };
+        }[];
+        Cabin?: {
+          Type: string;
+        };
+        IncludedAirlineCodes?: {
+          AirlineCode: string;
+        }[];
+        ExcludedAirlineCodes?: {
+          AirlineCode: string;
+        }[];
+        MaxPrice?: {
+          Value: number;
+          CurrencyCode: string;
+        };
+        DirectFlights?: boolean;
+        MaxStopsQuantity?: number;
+        Currency?: string;
+      };
+      Preferences?: {
+        AirlinePreferences?: {
+          Airline: {
+            AirlineID: string;
+          };
+          FarePreferences?: {
+            FareCode: string;
+            FareBasisCode?: string;
+          }[];
+        }[];
+        FarePreferences?: {
+          FareCode: string;
+          FareBasisCode?: string;
+        }[];
+      };
+    };
   };
-  Recipient: {
-    AirlineRecipient: AirlineRecipient;
-  };
-}
-
-interface Departure {
-  AirportCode: string;
-  Date: string;
-}
-
-interface Arrival {
-  AirportCode: string;
-}
-
-interface OriginDestination {
-  Departure: Departure;
-  Arrival: Arrival;
-  id: string;
-}
-
-interface CabinPreference {
-  CabinType: string;
-}
-
-interface Passenger {
-  PTC: string;
-  Quantity: number;
-  id: string;
-}
-
-interface MaxPrice {
-  Value: number;
-  CurrencyCode: string;
-}
-
-interface CoreQuery {
-  OriginDestinations: OriginDestination[];
-  CabinPreferences: CabinPreference[];
-  Passengers: Passenger[];
-  Preference: {
-    MaxPrice: MaxPrice;
-  };
-}
-
-interface Currencies {
-  CurrencyCode: string;
-}
-
-interface Preference {
-  Currencies: Currencies;
-}
-
- export interface AirShoppingRQ {
-  Document: Document;
-  Party: Party;
-  CoreQuery: CoreQuery;
-  Preference: Preference;
 }
