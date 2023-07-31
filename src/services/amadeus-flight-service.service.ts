@@ -4,6 +4,8 @@ import {OfferPriceRequest} from '../interfaces/OfferPriceRequest.interface';
 import {OfferPriceResponse} from '../interfaces/OfferPriceResponse.interface';
 import {FlightOfferRequest} from '../interfaces/FlightOfferRequest.interface';
 import {FlightOfferResponse} from '../interfaces/FlightOfferResponse.interface';
+import {OrderCreateRequest} from '../interfaces/OrderCreateRequest.interface';
+import {OrderViewResponse} from '../interfaces/OrderViewResponse.interface';
 
 
 export class AmadeusFlightServiceProvider  {
@@ -31,5 +33,12 @@ export class AmadeusFlightServiceProvider  {
     });
   }
 
-
+  async createOrder(orderCreateRequest: OrderCreateRequest, pricingCountry:string): Promise<OrderViewResponse> {
+    return this.dataSource.execute({
+      authCode: pricingCountry,
+      method: 'POST',
+      url: '/v1/booking/flight-orders',
+      data: orderCreateRequest,
+    });
+  }
 }

@@ -5,6 +5,8 @@ import {FlightOfferRequest} from '../interfaces/FlightOfferRequest.interface';
 import {FlightOfferResponse} from '../interfaces/FlightOfferResponse.interface';
 import {OfferPriceRequest} from '../interfaces/OfferPriceRequest.interface';
 import {OfferPriceResponse} from '../interfaces/OfferPriceResponse.interface';
+import {OrderCreateRequest} from '../interfaces/OrderCreateRequest.interface';
+import {OrderViewResponse} from '../interfaces/OrderViewResponse.interface';
 
 
 
@@ -45,4 +47,22 @@ async getFlightOffersPricing(
   : Promise<OfferPriceResponse> {
   return this.flightServiceProvider.getFlightOffersPricing(flightOfferPricingRequest, priceIngCountry);
   }
+  @post('/create-order/{priceIngCountry}', {
+    responses: {
+      '200': {
+        description: 'Create Order',
+        content: {'application/json': {schema: {type: 'object'}}},
+      },
+    },
+  })
+  async createOrder(
+    @requestBody() orderCreateRequest: OrderCreateRequest,
+    @param.path.string('priceIngCountry') priceIngCountry: string, )
+    : Promise<OrderViewResponse> {
+    return this.flightServiceProvider.createOrder(orderCreateRequest, priceIngCountry);
+  }
+
 }
+
+
+
