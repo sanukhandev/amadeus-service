@@ -1,8 +1,9 @@
 import {inject} from '@loopback/core';
 import {AmadeusApiDataSource} from '../datasources';
-import {FlightOfferRequestInterface} from '../interfaces/FlightOfferRequest.interface';
-import {AnyObject} from '@loopback/repository';
-import {FlightOfferPricing} from '../interfaces/offer-price.interface';
+import {OfferPriceRequest} from '../interfaces/OfferPriceRequest.interface';
+import {FlightOfferResponseInterface} from '../interfaces/FlightOfferResponse.interface';
+import {OfferPriceResponse} from '../interfaces/OfferPriceResponse.interface';
+import {FlightOfferRequest} from '../interfaces/FlightOfferRequest.interface';
 
 
 export class AmadeusFlightServiceProvider  {
@@ -11,7 +12,7 @@ export class AmadeusFlightServiceProvider  {
     protected dataSource: AmadeusApiDataSource,
   ) {}
 
-  async getFlightOffers(flightOfferRequest: FlightOfferRequestInterface, pricingCountry:string): Promise<AnyObject> {
+  async getFlightOffers(flightOfferRequest: FlightOfferRequest, pricingCountry:string): Promise<FlightOfferResponseInterface> {
     console.log('flightOfferRequest', JSON.stringify(flightOfferRequest));
     return this.dataSource.execute({
       authCode: pricingCountry,
@@ -22,7 +23,7 @@ export class AmadeusFlightServiceProvider  {
 
   }
 
-  async getFlightOffersPricing(flightOfferPricingRequest: FlightOfferPricing, pricingCountry:string): Promise<AnyObject> {
+  async getFlightOffersPricing(flightOfferPricingRequest: OfferPriceRequest, pricingCountry:string): Promise<OfferPriceResponse> {
     return this.dataSource.execute({
       authCode: pricingCountry,
       method: 'POST',

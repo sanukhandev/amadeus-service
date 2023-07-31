@@ -1,5 +1,5 @@
 
-export interface FlightOfferRequestInterface {
+export interface FlightOfferRequest {
   currencyCode: string;
   originDestinations: Array<{
     id: string;

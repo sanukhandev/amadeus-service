@@ -1,10 +1,10 @@
 import {IATA_AirShoppingRQ} from '../models/19.2/AirShoppingRQ.interface';
-import {FlightOfferRequestInterface} from '../interfaces/FlightOfferRequest.interface';
 import {IATA_AirShoppingRS} from '../models/19.2/AirShoppingRS.interface';
 import {FlightOfferResponseInterface} from '../interfaces/FlightOfferResponse.interface';
+import {FlightOfferRequest} from '../interfaces/FlightOfferRequest.interface';
 
-export function convertToFlightOfferRequest(airShoppingRQ: IATA_AirShoppingRQ): FlightOfferRequestInterface {
-  return <FlightOfferRequestInterface>{
+export function convertToFlightOfferRequest(airShoppingRQ: IATA_AirShoppingRQ): FlightOfferRequest {
+  return <FlightOfferRequest>{
     currencyCode: 'USD',
     originDestinations: airShoppingRQ.Message.AirShopping.CoreQuery.OriginDestinations.map((originDestination, index) => {
       const {OriginDestination} = originDestination;
