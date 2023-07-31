@@ -115,7 +115,7 @@ export interface Dictionaries {
   carriers: CarrierDictionary;
 }
 
-export interface FlightOfferResponse {
+export interface FlightOfferResponseInterface {
   meta: Meta;
   data: FlightOffer[];
   dictionaries: Dictionaries;

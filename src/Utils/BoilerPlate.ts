@@ -1,10 +1,10 @@
 import {IATA_AirShoppingRQ} from '../models/19.2/AirShoppingRQ.interface';
-import {FlightOfferRequest} from '../interfaces/flightRequest';
+import {FlightOfferRequestInterface} from '../interfaces/FlightOfferRequest.interface';
 import {IATA_AirShoppingRS} from '../models/19.2/AirShoppingRS.interface';
-import {FlightOfferResponse} from '../interfaces/FlightOfferResponse';
+import {FlightOfferResponseInterface} from '../interfaces/FlightOfferResponse.interface';
 
-export function convertToFlightOfferRequest(airShoppingRQ: IATA_AirShoppingRQ): FlightOfferRequest {
-  return <FlightOfferRequest>{
+export function convertToFlightOfferRequest(airShoppingRQ: IATA_AirShoppingRQ): FlightOfferRequestInterface {
+  return <FlightOfferRequestInterface>{
     currencyCode: 'USD',
     originDestinations: airShoppingRQ.Message.AirShopping.CoreQuery.OriginDestinations.map((originDestination, index) => {
       const {OriginDestination} = originDestination;
@@ -27,7 +27,7 @@ export function convertToFlightOfferRequest(airShoppingRQ: IATA_AirShoppingRQ): 
     }),
     sources: ["GDS"],
     searchCriteria: {
-      maxFlightOffers: airShoppingRQ.Message.AirShopping.ShoppingResponseIDs?.length ?? 2,
+      maxFlightOffers: airShoppingRQ.Message.AirShopping.ShoppingResponseIDs?.length ?? 9,
       flightFilters: {
         cabinRestrictions: airShoppingRQ.Message.AirShopping.CoreQuery.Cabin?.Type
           ? [
@@ -43,7 +43,7 @@ export function convertToFlightOfferRequest(airShoppingRQ: IATA_AirShoppingRQ): 
   };
 }
 
-export function convertFlightOfferResponseToAirShoppingRS(flightOfferResponse: FlightOfferResponse): IATA_AirShoppingRS {
+export function convertFlightOfferResponseToAirShoppingRS(flightOfferResponse: FlightOfferResponseInterface): IATA_AirShoppingRS {
   return {
     Message: {
       Party: {
