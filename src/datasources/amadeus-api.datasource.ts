@@ -31,6 +31,10 @@ const AuthConfig: AuthConfig = {
   EU: {
     clientId : 'uGpEYjEylytHnKXeAXDc099Fqjulg2z1',
     clientSecret:'qmRyNLBUZdqWYS7a'
+  },
+  AE: {
+    clientId : 'l7ycjylS1GgJDOAt11oGGIGf6uIC5EBn',
+    clientSecret:'FuZAAJAqs6xynraI'
   }
 }
 
